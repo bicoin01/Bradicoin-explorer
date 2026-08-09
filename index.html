@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bradicoin Block Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Orbitron', monospace;
+            background: radial-gradient(circle at 20% 30%, #0a0f1e, #03050b);
+            color: #e0e5ff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        .neon-card {
+            background: rgba(8, 12, 26, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            border: 1px solid #a855f7;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .neon-card:hover { box-shadow: 0 0 40px rgba(168, 85, 247, 0.5); }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .logo {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, #a855f7, #00f2ff);
+            border-radius: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: glowPulse 2s infinite;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+        }
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.3); }
+            50% { box-shadow: 0 0 50px rgba(168, 85, 247, 0.6); }
+            100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.3); }
+        }
+        .logo i { font-size: 2.5rem; color: #0a0f1e; }
+        .title { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #a855f7, #00f2ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .subtitle { font-size: 0.6rem; color: rgba(224, 229, 255, 0.5); letter-spacing: 3px; }
+        .search-box { display: flex; gap: 0.5rem; margin: 1rem 0; }
+        .search-box input {
+            flex: 1;
+            background: rgba(1, 5, 24, 0.7);
+            border: 1px solid #a855f7;
+            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+            color: #e0e5ff;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.6rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .search-box input:focus { border-color: #00f2ff; box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
+        .search-box .btn {
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 1rem;
+            color: #0a0f1e;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 0.6rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .search-box .btn:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(168, 85, 247, 0.4); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; }
+        .stat-item { background: rgba(1, 5, 24, 0.5); padding: 0.8rem; border-radius: 1rem; border: 1px solid rgba(168, 85, 247, 0.15); text-align: center; }
+        .stat-item .label { font-size: 0.45rem; color: rgba(224, 229, 255, 0.4); text-transform: uppercase; letter-spacing: 1px; }
+        .stat-item .value { font-size: 0.8rem; font-weight: 700; color: #00f2ff; margin-top: 0.2rem; }
+        .stat-item .value.gold { color: #ffd700; }
+        .stat-item .value.green { color: #00ff88; }
+        .address-display {
+            background: rgba(1, 5, 24, 0.5);
+            padding: 0.8rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .address-display .addr { font-size: 0.55rem; color: #00f2ff; font-family: monospace; word-break: break-all; flex: 1; }
+        .address-display .copy-btn {
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid #a855f7;
+            color: #e0e5ff;
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.6rem;
+            cursor: pointer;
+            font-size: 0.5rem;
+            transition: all 0.2s;
+            font-family: 'Orbitron', monospace;
+        }
+        .address-display .copy-btn:hover { background: #a855f7; color: #0a0f1e; }
+        .balance-big { text-align: center; padding: 1.5rem; }
+        .balance-big .amount { font-size: 3.5rem; font-weight: 800; color: #00f2ff; text-shadow: 0 0 40px rgba(0, 242, 255, 0.3); }
+        .balance-big .usd { font-size: 1.2rem; color: #a855f7; }
+        .tx-list { max-height: 300px; overflow-y: auto; }
+        .tx-list::-webkit-scrollbar { width: 4px; }
+        .tx-list::-webkit-scrollbar-thumb { background: #a855f7; border-radius: 2px; }
+        .tx-item {
+            background: rgba(1, 5, 24, 0.3);
+            padding: 0.6rem 0.8rem;
+            border-radius: 0.6rem;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.55rem;
+            transition: all 0.2s;
+        }
+        .tx-item:hover { background: rgba(168, 85, 247, 0.1); }
+        .tx-item .tx-type { display: flex; align-items: center; gap: 0.5rem; }
+        .tx-item .tx-type .icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
+        .tx-item .tx-type .icon.deposit { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
+        .tx-item .tx-type .icon.transfer { background: rgba(0, 200, 255, 0.2); color: #00ccff; }
+        .tx-item .tx-type .icon.stake { background: rgba(255, 200, 0, 0.2); color: #ffc800; }
+        .tx-item .tx-amount { font-weight: 700; color: #00ff88; }
+        .tx-item .tx-amount.out { color: #ff4466; }
+        .tx-item .tx-time { font-size: 0.4rem; color: rgba(224, 229, 255, 0.3); }
+        .status-badge { display: inline-block; padding: 0.2rem 0.8rem; border-radius: 1rem; font-size: 0.45rem; border: 1px solid #00ff88; color: #00ff88; background: rgba(0, 255, 136, 0.1); }
+        .footer { text-align: center; margin-top: 2rem; font-size: 0.4rem; color: rgba(224, 229, 255, 0.2); letter-spacing: 1px; }
+        .reward-block { background: rgba(255, 215, 0, 0.03); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 1rem; padding: 1rem; margin-top: 1rem; }
+        .reward-block .r-title { font-size: 0.55rem; color: #ffd700; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .reward-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; }
+        .reward-item { background: rgba(1, 5, 24, 0.3); padding: 0.4rem; border-radius: 0.6rem; text-align: center; }
+        .reward-item .label { font-size: 0.35rem; color: rgba(255, 215, 0, 0.4); text-transform: uppercase; }
+        .reward-item .value { font-size: 0.6rem; color: #ffd700; font-weight: 700; }
+        .loading { text-align: center; padding: 2rem; color: rgba(224, 229, 255, 0.4); font-size: 0.6rem; }
+        .loading i { font-size: 2rem; display: block; margin-bottom: 1rem; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 600px) {
+            body { padding: 1rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .balance-big .amount { font-size: 2.5rem; }
+            .search-box { flex-direction: column; }
+            .address-display { flex-direction: column; align-items: stretch; }
+            .reward-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo"><i class="fas fa-microchip"></i></div>
+        <div class="title">BRADICOIN</div>
+        <div class="subtitle">BLOCK EXPLORER</div>
+    </div>
+
+    <div class="neon-card">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search by Address..." value="Br000000000000000000000000000000004ac4">
+            <button class="btn" onclick="searchAddress()"><i class="fas fa-search"></i> Search</button>
+        </div>
+    </div>
+
+    <div id="resultContainer">
+        <div class="neon-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+                <span style="font-size:0.6rem; color:#a855f7;"><i class="fas fa-link"></i> ADDRESS</span>
+                <span class="status-badge"><i class="fas fa-check-circle"></i> Active</span>
+            </div>
+            <div class="address-display">
+                <span class="addr" id="addressDisplay">Br000000000000000000000000000000004ac4</span>
+                <button class="copy-btn" onclick="copyAddress()"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+        </div>
+
+        <div class="neon-card">
+            <div class="balance-big">
+                <div class="amount" id="balanceDisplay">0.00</div>
+                <div class="usd" id="usdDisplay">$0.00 USD</div>
+                <div style="margin-top:0.5rem; display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap;">
+                    <span class="status-badge">🔒 Staked: <span id="stakedDisplay">0.00</span> BRD</span>
+                    <span class="status-badge" style="border-color:#ffd700; color:#ffd700;">⭐ Rewards: <span id="rewardsDisplay">0.00</span> BRD</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="neon-card">
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-item"><div class="label">📦 Transactions</div><div class="value" id="txCount">0</div></div>
+                <div class="stat-item"><div class="label">🪙 Token</div><div class="value gold">BRD</div></div>
+                <div class="stat-item"><div class="label">📈 APY</div><div class="value green">18%</div></div>
+                <div class="stat-item"><div class="label">🔄 Status</div><div class="value green">✅ Active</div></div>
+            </div>
+        </div>
+
+        <div class="neon-card">
+            <div class="reward-block">
+                <div class="r-title"><i class="fas fa-gift"></i> Block Reward Data</div>
+                <div class="reward-grid" id="rewardGrid">
+                    <div class="reward-item"><div class="label">⛏️ Block</div><div class="value" id="currentBlock">---</div></div>
+                    <div class="reward-item"><div class="label">💰 Reward</div><div class="value" id="blockReward">---</div></div>
+                    <div class="reward-item"><div class="label">📊 Supply</div><div class="value" id="totalSupply">---</div></div>
+                    <div class="reward-item"><div class="label">📈 Circulating</div><div class="value" id="circulatingSupply">---</div></div>
+                </div>
+                <div style="margin-top:0.5rem; text-align:center; font-size:0.4rem; color:rgba(255,215,0,0.3);">
+                    <i class="fas fa-external-link-alt"></i> <a href="https://bradicoin-api.onrender.com/api/rewards" target="_blank" style="color:#00f2ff; text-decoration:none;">View Raw Data</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="neon-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem;">
+                <span style="font-size:0.6rem; color:#a855f7;"><i class="fas fa-history"></i> RECENT TRANSACTIONS</span>
+                <span style="font-size:0.4rem; color:rgba(224,229,255,0.3);" id="txCountLabel">0 transactions</span>
+            </div>
+            <div class="tx-list" id="transactionsList">
+                <div class="loading"><i class="fas fa-spinner fa-spin"></i>Loading transactions...</div>
+            </div>
+        </div>
+
+        <button class="btn" onclick="loadAllData()" style="width:100%; justify-content:center; margin-top:0.5rem; background:linear-gradient(135deg, #a855f7, #3b82f6); border:none; padding:0.8rem; border-radius:1rem; color:#0a0f1e; font-family:'Orbitron', monospace; font-weight:700; font-size:0.6rem; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; gap:0.5rem;">
+            <i class="fas fa-sync-alt"></i> Refresh Data
+        </button>
+    </div>
+
+    <div class="footer">
+        🔐 Non-Custodial · ZK-SNARK Privacy · Bradicoin Ecosystem
+        <br><span style="font-size:0.3rem; color:rgba(255,215,0,0.2);">CoinGecko Ready · v2.0</span>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'https://bradicoin-api.onrender.com';
+    const BRD_PRICE = 10;
+
+    function formatBRD(wei) {
+        if (!wei) return '0.00';
+        return (wei / 1e18).toFixed(8);
+    }
+
+    function formatBRDShort(wei) {
+        if (!wei) return '0.00';
+        return (wei / 1e18).toFixed(2);
+    }
+
+    function getAddress() {
+        return document.getElementById('searchInput').value.trim() || 'Br000000000000000000000000000000004ac4';
+    }
+
+    function copyAddress() {
+        const addr = document.getElementById('addressDisplay').innerText;
+        navigator.clipboard.writeText(addr).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i> Copy', 2000);
+        });
+    }
+
+    async function loadRewardData() {
+        try {
+            const res = await fetch(`${API_URL}/api/rewards`);
+            const data = await res.json();
+            if (data.success) {
+                const r = data.data;
+                document.getElementById('currentBlock').textContent = r.current_block || '---';
+                document.getElementById('blockReward').textContent = formatBRDShort(r.block_reward) + ' BRD';
+                document.getElementById('totalSupply').textContent = formatBRDShort(r.total_supply) + ' BRD';
+                document.getElementById('circulatingSupply').textContent = formatBRDShort(r.circulating_supply) + ' BRD';
+            }
+        } catch (e) { console.error('Reward error:', e); }
+    }
+
+    async function loadWalletData(address) {
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const usdDisplay = document.getElementById('usdDisplay');
+        const stakedDisplay = document.getElementById('stakedDisplay');
+        const rewardsDisplay = document.getElementById('rewardsDisplay');
+        const txCount = document.getElementById('txCount');
+        const txCountLabel = document.getElementById('txCountLabel');
+        const addressDisplay = document.getElementById('addressDisplay');
+        const transactionsList = document.getElementById('transactionsList');
+
+        balanceDisplay.textContent = '...';
+        transactionsList.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i>Loading...</div>`;
+
+        try {
+            const balanceRes = await fetch(`${API_URL}/api/balance/${address}`);
+            const balanceData = await balanceRes.json();
+
+            if (balanceData.success) {
+                const bal = balanceData.data.balance || 0;
+                const brdAmount = formatBRD(bal);
+                const usdAmount = (bal / 1e18) * BRD_PRICE;
+
+                balanceDisplay.textContent = brdAmount;
+                usdDisplay.textContent = `$${usdAmount.toFixed(2)} USD`;
+                stakedDisplay.textContent = formatBRDShort(balanceData.data.staked || 0);
+                rewardsDisplay.textContent = formatBRDShort(balanceData.data.rewards || 0);
+                addressDisplay.textContent = address;
+                document.getElementById('searchInput').value = address;
+            }
+
+            const txRes = await fetch(`${API_URL}/api/transactions/${address}`);
+            const txData = await txRes.json();
+
+            if (txData.success) {
+                const txs = txData.data.transactions || [];
+                txCount.textContent = txs.length;
+                txCountLabel.textContent = `${txs.length} transactions`;
+
+                if (txs.length === 0) {
+                    transactionsList.innerHTML = `<div class="tx-item" style="justify-content:center; color:rgba(224,229,255,0.3);">No transactions found</div>`;
+                } else {
+                    transactionsList.innerHTML = txs.slice(0, 20).map(tx => {
+                        const isDeposit = tx.type === 'deposit' || tx.type === 'genesis';
+                        const isOut = tx.from === address && tx.type === 'transfer';
+                        const icon = isDeposit ? '💰' : (tx.type === 'stake' ? '🔒' : (tx.type === 'unstake' ? '🔓' : '📤'));
+                        const iconClass = isDeposit ? 'deposit' : (tx.type === 'stake' ? 'stake' : 'transfer');
+                        const amount = formatBRD(tx.amount || 0);
+                        const date = new Date(tx.timestamp || Date.now()).toLocaleString();
+                        return `
+                            <div class="tx-item">
+                                <div class="tx-type">
+                                    <div class="icon ${iconClass}">${icon}</div>
+                                    <div>
+                                        <div>${tx.type || 'Transfer'}</div>
+                                        <div class="tx-time">${date}</div>
+                                    </div>
+                                </div>
+                                <div class="tx-amount ${isOut ? 'out' : ''}">${isOut ? '-' : '+'} ${amount} BRD</div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            balanceDisplay.textContent = '⚠️ Error';
+            transactionsList.innerHTML = `<div class="tx-item" style="justify-content:center; color:#ff4466;"><i class="fas fa-exclamation-circle"></i> Error loading data</div>`;
+        }
+    }
+
+    async function loadAllData() {
+        const address = getAddress();
+        await loadWalletData(address);
+        await loadRewardData();
+    }
+
+    function searchAddress() {
+        loadAllData();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAllData);
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') searchAddress();
+    });
+    setInterval(loadAllData, 30000);
+</script>
+</body>
+</html>
